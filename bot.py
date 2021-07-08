@@ -7,8 +7,15 @@ from random import randint
 import json
 
 
-client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-guild = client.get_guild(727588974658322442)
+bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+
+
+@bot.event
+async def on_ready():
+    global guild
+
+    guild = bot.get_guild(727588974658322442)
+
 
 # Globals and redefinition
 
@@ -22,17 +29,15 @@ def neededLvlsForRebirth(rebirths):
 
 
 def rebirthBonus(rebirths):
-    return round(rebirths ** 1.18)
+    return round(rebirths ** 1.25)
 
 
 def xpAdded(rebirths, boosts):
-    return round((randint(5, 20) + rebirthBonus(rebirths) + 1) * boosts)
+    return round((randint(5, 20) + rebirthBonus(rebirths)) * boosts)
 
 
-@client.command()
-async def level(
-    ctx,
-):
+@bot.command()
+async def level(ctx):
     userID = ctx.message.author.id
 
     with open("data.json", "r") as file:
@@ -51,7 +56,7 @@ async def level(
     )
 
 
-@client.command()
+@bot.command()
 async def rebirth(ctx):
     userID = ctx.message.author.id
     with open("data.json", "r+") as file:
@@ -61,7 +66,7 @@ async def rebirth(ctx):
         lvl = data[str(userID)]["lvl"]
         rebirths = data[str(userID)]["rebirths"]
 
-        channel = client.get_channel(727588975681863731)
+        channel = bot.get_channel(727588975681863731)
 
         if lvl >= neededLvlsForRebirth(rebirths):
             data[str(userID)]["lvl"] = 1
@@ -125,7 +130,7 @@ async def rebirth(ctx):
                 )
 
 
-@client.event
+@bot.event
 async def on_message(message):
     global member
 
@@ -147,7 +152,7 @@ async def on_message(message):
         await addXP(userID)
         await levelUp(userID)
 
-        await client.process_commands(message)
+        await bot.process_commands(message)
 
 
 async def addXP(userID):
@@ -173,7 +178,7 @@ async def levelUp(userID):
         rebirths = data[str(userID)]["rebirths"]
 
         if xp >= neededXpToLvlUp(lvl, rebirths):
-            channel = client.get_channel(727588975681863731)
+            channel = bot.get_channel(727588975681863731)
 
             data[str(userID)]["lvl"] += 1
             data[str(userID)]["xp"] = 0
@@ -231,4 +236,4 @@ def howManyMessagesUntil(rebirths=0, lvls=0, rebirthsAlready=0, LvlsAlready=0):
     return round(messages)
 
 
-client.run(token)
+bot.run(token)
