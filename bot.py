@@ -239,23 +239,4 @@ async def removeRole(userID, role):
             await member.remove_roles(discord.utils.get(guild.roles, name=role))
 
 
-def howManyMessagesUntil(rebirths=0, lvls=0, rebirthsAlready=0, LvlsAlready=0):
-    messages = 0
-    averageXP = 12.5
-
-    for rbrt in range(rebirths - rebirthsAlready):
-        for lvl in range(neededLvlsForRebirth(rbrt) - LvlsAlready):
-            messages += neededXpToLvlUp((lvl + LvlsAlready), rbrt) / averageXP
-
-        averageXP += round((rbrt + rebirthsAlready) ** 1.1)
-
-    if rebirths == 0:
-        rbrt = 0
-
-    for lvl in range(lvls - LvlsAlready):
-        messages += neededXpToLvlUp((lvl + LvlsAlready + 1), rbrt) / averageXP
-
-    return round(messages)
-
-
 bot.run(token)
