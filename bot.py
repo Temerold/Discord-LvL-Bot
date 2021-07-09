@@ -25,11 +25,11 @@ def neededXpToLvlUp(lvl, rebirths):
 
 
 def neededLvlsForRebirth(rebirths):
-    return round(rebirths ** 0.4) + 5
+    return round(rebirths ** 0.8) + 5
 
 
 def rebirthBonus(rebirths):
-    return round(rebirths ** 1.25)
+    return round(rebirths ** 1.2)
 
 
 def xpAdded(rebirths):
@@ -212,10 +212,11 @@ async def levelUp(userID):
             json.dump(data, file2, indent=4)
 
         await bot.get_channel(727588975681863731).send(
-            f"Loggers! {loggers_emoji} <@{userID}> kom upp i **level {lvl}**! "
+            f"Loggers! {loggers_emoji} <@{userID}> kom upp i **level "
+            + f"{lvl + 1}**! "
             + (f"{loggers_emoji} ") * 6
         )
-        print(f"{userID} kom upp i level {lvl}")
+        print(f"{userID} kom upp i level {lvl + 1}")
 
         try:
             await addRole(userID, ("LvL " + str(lvl)))
@@ -225,7 +226,7 @@ async def levelUp(userID):
 
 async def addRole(userID, role):
     global guild
-
+    print(guild)
     for member in guild.members:
         if int(member.id) == int(userID):
             await member.add_roles(discord.utils.get(guild.roles, name=role))
