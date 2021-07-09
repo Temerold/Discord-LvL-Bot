@@ -17,7 +17,7 @@ async def on_ready():
     guild = bot.get_guild(727588974658322442)
 
 
-# Globals and redefinition
+loggers_emoji = "<:loggers:860219204828528671>"
 
 
 def neededXpToLvlUp(lvl, rebirths):
@@ -66,8 +66,6 @@ async def rebirth(ctx):
         lvl = data[str(userID)]["lvl"]
         rebirths = data[str(userID)]["rebirths"]
 
-        channel = bot.get_channel(727588975681863731)
-
         if lvl >= neededLvlsForRebirth(rebirths):
             data[str(userID)]["lvl"] = 1
             data[str(userID)]["xp"] = 0
@@ -81,7 +79,7 @@ async def rebirth(ctx):
 
             await ctx.channel.send(
                 f"Oh lärkar, {ctx.message.author.mention}! Du rebirthar. Fine."
-                + " Det är helt okej, så länge du inte blandar in mig. "
+                + " Det är helt okej, så länge du inte blandar in mig... "
                 + "Förstått? I vilket fall som helst så har du nu följande ..."
                 + f" typ bonuses (eller nåt sånt):\n    "
                 + f"+{rebirthBonus(rebirths)} XP per meddelande"
@@ -110,7 +108,7 @@ async def rebirth(ctx):
                 grammarCase = "levlar"
 
             if userID == 410123402196811806:
-                await channel.send(
+                await ctx.channel.send(
                     f"Wow! {ctx.message.author.mention}, chilla! Jag vet att "
                     + "du äger stället, och att det är dina regler som gäller "
                     + f"här, men du är i level {lvl}. Du behöver komma upp i "
@@ -120,7 +118,7 @@ async def rebirth(ctx):
                 )
 
             else:
-                await channel.send(
+                await ctx.channel.send(
                     f"Wow! {ctx.message.author.mention}, chilla! Kom inte in "
                     + "som om du äger stället. Mina regler gäller här, och du "
                     + f"är i level {lvl}. Du behöver komma upp i, *minst*, "
@@ -171,6 +169,8 @@ async def addXP(userID):
 
 
 async def levelUp(userID):
+    global loggers
+
     with open("data.json", "r+") as file:
         data = json.load(file)
         lvl = data[str(userID)]["lvl"]
@@ -178,8 +178,6 @@ async def levelUp(userID):
         rebirths = data[str(userID)]["rebirths"]
 
         if xp >= neededXpToLvlUp(lvl, rebirths):
-            channel = bot.get_channel(727588975681863731)
-
             data[str(userID)]["lvl"] += 1
             data[str(userID)]["xp"] = 0
             lvl = data[str(userID)]["lvl"]
@@ -187,9 +185,7 @@ async def levelUp(userID):
             with open("data.json", "w") as file2:
                 json.dump(data, file2, indent=4)
 
-            loggers_emoji = "<:loggers:860219204828528671>"
-
-            await channel.send(
+            await bot.get_channel(727588975681863731).send(
                 f"Loggers! {loggers_emoji} <@{userID}> kom upp i **level "
                 + f"{lvl}**! "
                 + (f"{loggers_emoji} ") * 6
