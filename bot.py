@@ -182,6 +182,7 @@ async def levelUp(userID):
 
             data[str(userID)]["lvl"] += 1
             data[str(userID)]["xp"] = 0
+            lvl = data[str(userID)]["lvl"]
 
             with open("data.json", "w") as file2:
                 json.dump(data, file2, indent=4)
