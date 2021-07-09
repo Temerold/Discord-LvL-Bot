@@ -32,19 +32,20 @@ def rebirthBonus(rebirths):
     return round(rebirths ** 1.25)
 
 
-def xpAdded(rebirths, boosts):
-    return round((randint(5, 20) + rebirthBonus(rebirths)) * boosts)
+def xpAdded(rebirths):
+    return round((randint(5, 20) + rebirthBonus(rebirths)))
 
 
 @bot.command()
 async def level(ctx):
-    userID = ctx.message.author.id
+    userID = str(ctx.message.author.id)
 
     with open("data.json", "r") as file:
         data = json.load(file)
-        lvl = data[str(userID)]["lvl"]
-        xp = data[str(userID)]["xp"]
-        rebirths = data[str(userID)]["rebirths"]
+
+    lvl = data[userID]["lvl"]
+    xp = data[userID]["xp"]
+    rebirths = data[userID]["rebirths"]
 
     await ctx.send(
         f"""{ctx.message.author.mention}, dina stats lyder som följande:
@@ -58,24 +59,37 @@ async def level(ctx):
 
 @bot.command()
 async def rebirth(ctx):
-    userID = ctx.message.author.id
+    userID = str(ctx.message.author.id)
+
     with open("data.json", "r+") as file:
         data = json.load(file)
-        lvl = data[str(userID)]["lvl"]
-
         lvl = data[str(userID)]["lvl"]
         rebirths = data[str(userID)]["rebirths"]
 
         if lvl >= neededLvlsForRebirth(rebirths):
-            data[str(userID)]["lvl"] = 1
-            data[str(userID)]["xp"] = 0
-            data[str(userID)]["rebirths"] += 1
+            data[userID]["lvl"] = 1
+            data[userID]["xp"] = 0
+            data[userID]["rebirths"] += 1
+            # Resets level and XP but adds one rebirth
+
+            rebirths = data[userID]["rebirths"]
+            # Defines the amount of rebirths as a varible, to send and
+            # print it later.
 
             file.seek(0)
-            json.dump(data, file, indent=4)
-            file.truncate()
+            # Sometimes, `json.dump` dumps at the end of the file.
+            # `file.seek(0)` assures that `json.dump()` overwrites the
+            # file, starting at the beginning.
 
-            rebirths = data[str(userID)]["rebirths"]
+            json.dump(data, file, indent=4)
+
+            file.truncate()
+            # Removes the rest of the file, even if there isn't any.
+            # This is needed if `json.dump` doesn't overwrite the file,
+            # and instead jsut writes new content before it. If so, the
+            # old content gets removed.
+
+            rebirths = data[userID]["rebirths"]
 
             await ctx.channel.send(
                 f"Oh lärkar, {ctx.message.author.mention}! Du rebirthar. Fine."
@@ -90,24 +104,41 @@ async def rebirth(ctx):
                     await removeRole(userID, ("LvL " + str(lvl + 1)))
                 except:
                     pass
+            # Removes the level-earned roles from the user, testing
+            # all possible roles they could have (1->lvl + 1).
 
             if rebirths == 1:
-                grammarCase = " Rebirth"
+
+                grammarCase = "Rebirth"
+            # In the case that this' the user's first rebirth, for the
+            # string to be grammatically correct, `grammarCase` gets
+            # defined as a singular "Rebirth".
+
             else:
-                grammarCase = " Rebirths"
+                grammarCase = "Rebirths"
+                # `GrammarCase` gets defines as a plural
 
             try:
-                await addRole(userID, (str(rebirths) + grammarCase))
+                await addRole(userID, f"{rebirths} {grammarCase}")
             except:
                 pass
 
         else:
             if neededLvlsForRebirth(rebirths) - lvl == 1:
-                grammarCase = "level"
+                # In the case that there's only level left, for the
+                # string to be grammatically correct, `grammarCase` gets
+                # defined as a singular "level".
+
+                grammarCase = "level"  # "Level" in Swedish
+
             else:
-                grammarCase = "levlar"
+                grammarCase = "levlar"  # "Levels" in Swedish
+                # `GrammarCase` gets defines as a plural
 
             if userID == 410123402196811806:
+                # Me, the creator - Temerold. Instead of giving me an
+                # attitude, it treats me with respect. Since I'm its creator.
+
                 await ctx.channel.send(
                     f"Wow! {ctx.message.author.mention}, chilla! Jag vet att "
                     + "du äger stället, och att det är dina regler som gäller "
@@ -126,15 +157,12 @@ async def rebirth(ctx):
                     + f" {neededLvlsForRebirth(rebirths) - lvl} {grammarCase} "
                     + "kvar. Kom igen, din lata ek!"
                 )
+                # **An attitide**
 
 
 @bot.event
 async def on_message(message):
-    global member
-
     if str(message.author) != "penid#7202" and randint(1, 1) == 1:
-        member = message.author
-
         userID = str(message.author.id)
 
         with open("data.json", "r") as file:
@@ -142,10 +170,12 @@ async def on_message(message):
 
         if userID not in data:
             print("Added: " + userID)
-            data[str(userID)] = {"lvl": 1, "xp": 0, "rebirths": 0, "boosts": 1}
-            file = open("data.json", "w")
-            json.dump(data, file, indent=4)
-            file.close()
+
+            data[userID] = {"lvl": 1, "xp": 0, "rebirths": 0}
+            # Creates new user with one level, zero XP, and zero rebirths
+
+            with open("data.json", "w") as file:
+                json.dump(data, file, indent=4)
 
         await addXP(userID)
         await levelUp(userID)
@@ -157,45 +187,40 @@ async def addXP(userID):
     with open("data.json", "r") as file:
         data = json.load(file)
 
-    lvl = data[userID]["lvl"]
-    xp = data[userID]["xp"]
-    rebirths = data[userID]["rebirths"]
-    boosts = data[str(userID)]["boosts"]
-
-    data[str(userID)]["xp"] += xpAdded(rebirths, boosts)
+    data[userID]["xp"] += xpAdded(data[userID]["rebirths"])
+    # Adds xpAdded XP to the user
 
     with open("data.json", "w") as file:
         json.dump(data, file, indent=4)
 
 
 async def levelUp(userID):
-    global loggers
+    global loggers_emoji
 
     with open("data.json", "r+") as file:
         data = json.load(file)
-        lvl = data[str(userID)]["lvl"]
-        xp = data[str(userID)]["xp"]
-        rebirths = data[str(userID)]["rebirths"]
 
-        if xp >= neededXpToLvlUp(lvl, rebirths):
-            data[str(userID)]["lvl"] += 1
-            data[str(userID)]["xp"] = 0
-            lvl = data[str(userID)]["lvl"]
+    lvl = data[userID]["lvl"]
+    xp = data[userID]["xp"]
+    rebirths = data[userID]["rebirths"]
 
-            with open("data.json", "w") as file2:
-                json.dump(data, file2, indent=4)
+    if xp >= neededXpToLvlUp(lvl, rebirths):
+        data[userID]["lvl"] += 1
+        data[userID]["xp"] = 0
 
-            await bot.get_channel(727588975681863731).send(
-                f"Loggers! {loggers_emoji} <@{userID}> kom upp i **level "
-                + f"{lvl}**! "
-                + (f"{loggers_emoji} ") * 6
-            )
-            print(f"{userID} kom upp i level {lvl}")
+        with open("data.json", "w") as file2:
+            json.dump(data, file2, indent=4)
 
-            try:
-                await addRole(userID, ("LvL " + str(lvl)))
-            except:
-                pass
+        await bot.get_channel(727588975681863731).send(
+            f"Loggers! {loggers_emoji} <@{userID}> kom upp i **level {lvl}**! "
+            + (f"{loggers_emoji} ") * 6
+        )
+        print(f"{userID} kom upp i level {lvl}")
+
+        try:
+            await addRole(userID, ("LvL " + str(lvl)))
+        except:
+            pass
 
 
 async def addRole(userID, role):
