@@ -33,7 +33,7 @@ def rebirthBonus(rebirths):
 
 
 def xpAdded(rebirths):
-    return round((randint(5, 20) + rebirthBonus(rebirths))) * 3
+    return round((randint(5, 20) + rebirthBonus(rebirths)))
 
 
 @bot.command()
