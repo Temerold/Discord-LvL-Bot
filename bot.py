@@ -226,7 +226,7 @@ async def levelUp(userID):
 
 async def addRole(userID, role):
     global guild
-
+    print(guild)
     for member in guild.members:
         if int(member.id) == int(userID):
             await member.add_roles(discord.utils.get(guild.roles, name=role))
