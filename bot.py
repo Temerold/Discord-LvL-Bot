@@ -162,7 +162,7 @@ async def rebirth(ctx):
 
 @bot.event
 async def on_message(message):
-    if str(message.author) != "penid#6678" and randint(1, 1) == 1:
+    if str(message.author) != "penid#7202" and randint(1, 1) == 1:
         userID = str(message.author.id)
 
         with open("data.json", "r") as file:
