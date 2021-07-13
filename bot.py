@@ -32,7 +32,7 @@ def rebirthBonus(rebirths):
     return round(rebirths ** 1.2)
 
 
-def xpEarnings(rebirths):
+def xpAdded(rebirths):
     return round((randint(5, 20) + rebirthBonus(rebirths)))
 
 
@@ -187,8 +187,8 @@ async def addXP(userID):
     with open("data.json", "r") as file:
         data = json.load(file)
 
-    data[userID]["xp"] += xpEarnings(data[userID]["rebirths"])
-    # Adds xpEarnings XP to the user
+    data[userID]["xp"] += xpAdded(data[userID]["rebirths"])
+    # Adds xpAdded XP to the user
 
     with open("data.json", "w") as file:
         json.dump(data, file, indent=4)
@@ -226,7 +226,7 @@ async def levelUp(userID):
 
 async def addRole(userID, role):
     global guild
-
+    print(guild)
     for member in guild.members:
         if int(member.id) == int(userID):
             await member.add_roles(discord.utils.get(guild.roles, name=role))
